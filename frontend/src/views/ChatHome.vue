@@ -173,7 +173,8 @@
             <div
               v-if="conversationStore.streamingContent"
               class="message-bubble"
-            ><span v-html="renderMarkdown(conversationStore.streamingContent)"></span><span class="cursor-blink">|</span></div>
+              v-html="renderMarkdown(conversationStore.streamingContent) + '<span class=\'cursor-blink\'>|</span>'"
+            ></div>
             <div v-else class="typing-indicator">
               <span class="typing-dot" />
               <span class="typing-dot" />
