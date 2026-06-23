@@ -130,19 +130,6 @@ CREATE TABLE IF NOT EXISTS `daily_record` (
     INDEX `idx_user_date_type` (`user_id`, `record_date`, `record_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='每日饮食训练记录表';
 
--- AI个性化计划表
-CREATE TABLE IF NOT EXISTS `ai_plan` (
-    `id`            BIGINT       PRIMARY KEY AUTO_INCREMENT,
-    `user_id`       BIGINT       NOT NULL       COMMENT '用户 ID',
-    `plan_type`     VARCHAR(20)  NOT NULL       COMMENT '类型: diet / workout / combined',
-    `input_data`    TEXT         NOT NULL       COMMENT '用户输入(身高/体重/目标)JSON',
-    `plan_content`  LONGTEXT     NOT NULL       COMMENT 'AI 生成的计划内容(Markdown)',
-    `created_at`    DATETIME     DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE,
-    INDEX `idx_user_id` (`user_id`),
-    INDEX `idx_created_at` (`created_at` DESC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI个性化计划表';
-
 -- 健康资讯/文章表
 CREATE TABLE IF NOT EXISTS `article` (
     `id`            BIGINT       PRIMARY KEY AUTO_INCREMENT,

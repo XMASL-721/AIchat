@@ -104,9 +104,6 @@
                 <el-dropdown-item command="dashboard">
                   <el-icon><DataLine /></el-icon> 数据看板
                 </el-dropdown-item>
-                <el-dropdown-item command="plans">
-                  <el-icon><Document /></el-icon> AI 计划
-                </el-dropdown-item>
                 <el-dropdown-item command="changePassword">
                   <el-icon><Edit /></el-icon> 修改密码
                 </el-dropdown-item>
@@ -287,7 +284,7 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Delete, Edit, SwitchButton, Expand, Promotion, ArrowRight, User, Star, DataLine, Document, Sunny, Moon } from '@element-plus/icons-vue'
+import { Plus, Delete, Edit, SwitchButton, Expand, Promotion, ArrowRight, User, Star, DataLine, Sunny, Moon } from '@element-plus/icons-vue'
 import { renderMarkdown } from '../utils/markdown'
 import { useUserStore } from '../stores/user'
 import { useConversationStore } from '../stores/conversation'
@@ -464,8 +461,6 @@ function handleUserCommand(command) {
     router.push('/favorites')
   } else if (command === 'dashboard') {
     router.push('/dashboard')
-  } else if (command === 'plans') {
-    router.push('/plans/generate')
   } else if (command === 'changePassword') {
     passwordForm.value = { oldPassword: '', newPassword: '', confirmNewPassword: '' }
     passwordDialogVisible.value = true

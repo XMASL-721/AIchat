@@ -17,8 +17,6 @@ const routes = [
   { path: '/profile',  name: 'Profile',   component: () => import('../views/Profile.vue'),   meta: { requiresAuth: true } },
   { path: '/favorites', name: 'Favorites', component: () => import('../views/Favorites.vue'), meta: { requiresAuth: true } },
   { path: '/dashboard', name: 'Dashboard', component: () => import('../views/Dashboard.vue'), meta: { requiresAuth: true } },
-  { path: '/plans/generate', name: 'PlanGenerator', component: () => import('../views/PlanGenerator.vue'), meta: { requiresAuth: true } },
-  { path: '/plans', name: 'PlanHistory', component: () => import('../views/PlanHistory.vue'), meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })

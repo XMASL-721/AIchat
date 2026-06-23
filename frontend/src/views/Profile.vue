@@ -147,11 +147,6 @@
             <div class="stat-value">{{ stats.favorites }}</div>
             <div class="stat-label">收藏数量</div>
           </div>
-          <div class="stat-item plans">
-            <div class="stat-icon">📋</div>
-            <div class="stat-value">{{ stats.plans }}</div>
-            <div class="stat-label">AI 计划</div>
-          </div>
           <div class="stat-item days">
             <div class="stat-icon">📅</div>
             <div class="stat-value">{{ stats.days }}</div>
@@ -187,7 +182,6 @@ const updating = ref(false)
 const stats = ref({
   conversations: 0,
   favorites: 0,
-  plans: 0,
   days: 0
 })
 
@@ -578,7 +572,6 @@ function handleReset() {
 
 .stat-item.conversations { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
 .stat-item.favorites { background: linear-gradient(135deg, #fef2f2, #fecaca); }
-.stat-item.plans { background: linear-gradient(135deg, #f0fdf4, #dcfce7); }
 .stat-item.days { background: linear-gradient(135deg, #faf5ff, #e9d5ff); }
 
 .stat-icon {
@@ -594,7 +587,6 @@ function handleReset() {
 
 .stat-item.conversations .stat-value { color: #2563eb; }
 .stat-item.favorites .stat-value { color: #ef4444; }
-.stat-item.plans .stat-value { color: #10b981; }
 .stat-item.days .stat-value { color: #8b5cf6; }
 
 .stat-label {
