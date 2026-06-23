@@ -285,32 +285,59 @@ function handlePageChange(page) {
 .pagination { display: flex; justify-content: center; margin-top: 32px; }
 
 .plan-detail-content {
-  max-height: 70vh; overflow-y: auto; padding: 16px;
-  background: var(--bg-tertiary, #f8fafc); border-radius: 12px; line-height: 1.8;
+  max-height: 70vh; overflow-y: auto; padding: 28px;
+  background: var(--bg-secondary, #fff); border-radius: 12px; line-height: 1.85; font-size: 15px;
 }
-
-.plan-detail-content :deep(h1),
-.plan-detail-content :deep(h2),
-.plan-detail-content :deep(h3) {
-  color: var(--text-primary, #1e293b); margin-top: 24px; margin-bottom: 12px;
+.plan-detail-content :deep(> h1) {
+  font-size: 24px; font-weight: 800; margin: 0 0 20px; padding: 14px 0;
+  border-bottom: 3px solid #8b5cf6;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-
-.plan-detail-content :deep(h1) {
-  font-size: 24px; border-bottom: 2px solid var(--border-color, #e2e8f0); padding-bottom: 8px;
+.plan-detail-content :deep(> h2) {
+  font-size: 19px; font-weight: 700; margin: 28px 0 14px; padding: 10px 16px;
+  border-radius: 12px; border-left: 4px solid #8b5cf6;
+  background: linear-gradient(90deg, rgba(139,92,246,0.08), transparent);
 }
-.plan-detail-content :deep(h2) { font-size: 20px; }
-.plan-detail-content :deep(h3) { font-size: 16px; }
-
-.plan-detail-content :deep(table) { width: 100%; border-collapse: collapse; margin: 16px 0; }
-.plan-detail-content :deep(th),
-.plan-detail-content :deep(td) {
-  border: 1px solid var(--border-color, #e2e8f0); padding: 12px; text-align: left;
+.plan-detail-content :deep(> h3) {
+  font-size: 16px; font-weight: 600; margin: 22px 0 10px;
+  color: #6366f1; padding-left: 12px; border-left: 3px solid #c4b5fd;
 }
-.plan-detail-content :deep(th) { background: var(--bg-tertiary, #f1f5f9); font-weight: 600; }
-
-.plan-detail-content :deep(ul), .plan-detail-content :deep(ol) { padding-left: 24px; margin: 12px 0; }
-.plan-detail-content :deep(li) { margin: 8px 0; }
-.plan-detail-content :deep(strong) { color: var(--text-primary); font-weight: 700; }
+.plan-detail-content :deep(> p) { margin: 0 0 14px; line-height: 1.85; }
+.plan-detail-content :deep(> ul > li),
+.plan-detail-content :deep(> ol > li) {
+  margin: 8px 0; padding: 8px 12px; border-radius: 8px; line-height: 1.7;
+}
+.plan-detail-content :deep(> ul > li::marker) { color: #8b5cf6; }
+.plan-detail-content :deep(> ol > li::marker) { color: #8b5cf6; font-weight: 700; }
+.plan-detail-content :deep(strong) {
+  font-weight: 700;
+  background: linear-gradient(transparent 60%, rgba(139,92,246,0.15) 60%);
+  padding: 0 2px;
+}
+.plan-detail-content :deep(table) {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  margin: 16px 0 20px; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--border-color, #e2e8f0);
+}
+.plan-detail-content :deep(thead th) {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff; font-weight: 600; font-size: 14px; padding: 12px 16px; border: none;
+}
+.plan-detail-content :deep(tbody td) {
+  padding: 11px 16px; font-size: 14px;
+  border-bottom: 1px solid var(--border-light, #f1f5f9);
+}
+.plan-detail-content :deep(tbody tr:hover) { background: rgba(139,92,246,0.04); }
+.plan-detail-content :deep(hr) {
+  border: none; height: 2px; margin: 28px 0;
+  background: linear-gradient(90deg, transparent, #c4b5fd, transparent);
+}
+.plan-detail-content :deep(blockquote) {
+  margin: 16px 0; padding: 16px 20px;
+  border-left: 4px solid #8b5cf6; border-radius: 0 12px 12px 0;
+  background: linear-gradient(90deg, rgba(139,92,246,0.06), transparent);
+}
 
 .fab {
   position: fixed; bottom: 32px; right: 32px;
