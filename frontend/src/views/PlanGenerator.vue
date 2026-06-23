@@ -107,11 +107,36 @@
           </div>
         </div>
 
-        <!-- 计划内容 -->
-        <div class="plan-content-card">
-          <div class="plan-content" ref="planContentRef">
-            <div v-html="renderedPlan" class="markdown-body"></div>
-            <span v-if="!isComplete" class="cursor-blink">|</span>
+        <!-- 计划内容 - 分板块展示 -->
+        <div class="plan-sections" ref="planContentRef">
+          <!-- H1 标题（如果有） -->
+          <div v-if="planTitle" class="plan-hero">
+            <h1 v-html="renderInline(planTitle)"></h1>
+            <div class="plan-hero-meta">
+              <span class="meta-chip">{{ planTypeIcon }} {{ planTypeLabel }}</span>
+              <span class="meta-chip">🎯 {{ formData.inputData.goal }}</span>
+              <span class="meta-chip">📅 {{ formData.inputData.duration }}</span>
+            </div>
+          </div>
+
+          <!-- 各板块卡片 -->
+          <div
+            v-for="(section, idx) in planSections"
+            :key="idx"
+            class="section-card"
+            :class="'section-' + (idx % 4)"
+          >
+            <div class="section-header">
+              <span class="section-num">{{ String(idx + 1).padStart(2, '0') }}</span>
+              <h2 v-html="renderInline(section.title)"></h2>
+            </div>
+            <div class="section-body markdown-body" v-html="section.rendered"></div>
+          </div>
+
+          <!-- 正在生成中的光标 -->
+          <div v-if="!isComplete" class="generating-indicator">
+            <span class="cursor-blink">|</span>
+            <span class="generating-text">AI 正在生成中...</span>
           </div>
         </div>
 
@@ -175,11 +200,14 @@ const planTypeLabel = computed(() => {
   return planTypes.find(t => t.value === formData.value.planType)?.label || ''
 })
 
-// 模拟进度（基于内容长度估算）
+const planTypeIcon = computed(() => {
+  return planTypes.find(t => t.value === formData.value.planType)?.icon || '🎯'
+})
+
+// 模拟进度
 const progressPercent = computed(() => {
   if (isComplete.value) return 100
   const len = planContent.value.length
-  // 假设平均计划约 3000 字符
   return Math.min(95, Math.round((len / 3000) * 100))
 })
 
@@ -187,9 +215,51 @@ onBeforeUnmount(() => {
   if (abortController) abortController.abort()
 })
 
-const renderedPlan = computed(() => {
-  return renderMarkdown(planContent.value)
+// 提取 H1 标题
+const planTitle = computed(() => {
+  const match = planContent.value.match(/^#\s+(.+)$/m)
+  return match ? match[1] : ''
 })
+
+// 按 H2 拆分计划为板块
+const planSections = computed(() => {
+  const content = planContent.value
+  // 移除 H1 标题部分
+  const withoutH1 = content.replace(/^#\s+.+$/m, '').trim()
+  if (!withoutH1) return []
+
+  // 按 ## 拆分
+  const parts = withoutH1.split(/(?=^## )/m)
+  const sections = []
+
+  for (const part of parts) {
+    const trimmed = part.trim()
+    if (!trimmed) continue
+
+    // 提取 H2 标题
+    const h2Match = trimmed.match(/^##\s+(.+)$/m)
+    if (h2Match) {
+      const title = h2Match[1]
+      const body = trimmed.replace(/^##\s+.+$/m, '').trim()
+      sections.push({
+        title,
+        rendered: body ? renderMarkdown(body) : ''
+      })
+    } else {
+      // 没有 H2 标题的内容作为独立板块
+      sections.push({
+        title: '📋 详细内容',
+        rendered: renderMarkdown(trimmed)
+      })
+    }
+  }
+  return sections
+})
+
+// 渲染行内文本（不包裹 p 标签）
+function renderInline(text) {
+  return renderMarkdown(text).replace(/<\/?p>/g, '')
+}
 
 async function handleGenerate() {
   if (!userStore.isLoggedIn) {
@@ -373,113 +443,143 @@ function resetForm() {
   font-size: 11px; font-weight: 700; color: #8b5cf6;
 }
 
-/* 内容卡片 */
-.plan-content-card {
-  background: var(--bg-secondary, #fff); border-radius: 20px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid var(--border-color, #e2e8f0);
-  overflow: hidden;
-}
-.plan-content {
-  padding: 32px; max-height: 680px; overflow-y: auto;
-  line-height: 1.85; font-size: 15px;
+/* ===== 计划板块区域 ===== */
+.plan-sections {
+  display: flex; flex-direction: column; gap: 16px;
+  max-height: 720px; overflow-y: auto;
+  padding: 4px;
 }
 
-/* ===== Markdown 深度美化 ===== */
-.markdown-body :deep(> h1) {
-  font-size: 26px; font-weight: 800; margin: 0 0 20px; padding: 16px 0;
-  border-bottom: 3px solid #8b5cf6;
+/* H1 英雄区 */
+.plan-hero {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+  border-radius: 20px; padding: 28px 32px;
+  color: #fff; text-align: center;
+}
+.plan-hero h1 {
+  font-size: 24px; font-weight: 800; margin: 0 0 14px;
+  -webkit-text-fill-color: #fff;
+}
+.plan-hero h1 :deep(p) { margin: 0; }
+.plan-hero-meta {
+  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+}
+.meta-chip {
+  background: rgba(255,255,255,0.2); padding: 5px 14px;
+  border-radius: 20px; font-size: 13px; font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+
+/* 板块卡片 */
+.section-card {
+  background: var(--bg-secondary, #fff); border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  border: 1px solid var(--border-color, #e2e8f0);
+  overflow: hidden; transition: all 0.25s;
+}
+.section-card:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.section-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-light, #f1f5f9);
+}
+
+.section-0 .section-header { background: linear-gradient(90deg, rgba(139,92,246,0.08), transparent); }
+.section-1 .section-header { background: linear-gradient(90deg, rgba(16,185,129,0.08), transparent); }
+.section-2 .section-header { background: linear-gradient(90deg, rgba(245,158,11,0.08), transparent); }
+.section-3 .section-header { background: linear-gradient(90deg, rgba(59,130,246,0.08), transparent); }
+
+.section-num {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.section-0 .section-num { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.section-1 .section-num { background: linear-gradient(135deg, #10b981, #059669); }
+.section-2 .section-num { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.section-3 .section-num { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+.section-header h2 {
+  font-size: 18px; font-weight: 700; margin: 0;
   color: var(--text-primary, #0f172a);
-  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+}
+.section-header h2 :deep(p) { margin: 0; }
+
+.section-body {
+  padding: 20px 24px; line-height: 1.85; font-size: 15px;
 }
 
-.markdown-body :deep(> h2) {
-  font-size: 20px; font-weight: 700; margin: 32px 0 16px; padding: 12px 16px;
-  border-radius: 12px; border-left: 4px solid #8b5cf6;
-  background: linear-gradient(90deg, rgba(139,92,246,0.08), transparent);
-  color: var(--text-primary, #0f172a);
-}
-
+/* ===== 板块内 Markdown 美化 ===== */
 .markdown-body :deep(> h3) {
-  font-size: 17px; font-weight: 600; margin: 24px 0 12px;
+  font-size: 16px; font-weight: 600; margin: 20px 0 10px;
   color: #6366f1; padding-left: 12px;
   border-left: 3px solid #c4b5fd;
 }
-
 .markdown-body :deep(> h4) {
-  font-size: 15px; font-weight: 600; margin: 20px 0 8px;
+  font-size: 15px; font-weight: 600; margin: 16px 0 8px;
   color: var(--text-primary, #334155);
 }
-
 .markdown-body :deep(> p) {
-  margin: 0 0 14px; color: var(--text-primary, #334155); line-height: 1.85;
+  margin: 0 0 12px; color: var(--text-primary, #334155); line-height: 1.85;
 }
-
 .markdown-body :deep(> ul),
 .markdown-body :deep(> ol) {
-  padding-left: 8px; margin: 12px 0 16px;
+  padding-left: 8px; margin: 10px 0 14px;
 }
-
 .markdown-body :deep(> ul > li),
 .markdown-body :deep(> ol > li) {
-  margin: 8px 0; padding: 8px 12px; line-height: 1.7;
+  margin: 6px 0; padding: 6px 12px; line-height: 1.7;
   border-radius: 8px; transition: background 0.2s;
 }
-
 .markdown-body :deep(> ul > li:hover),
 .markdown-body :deep(> ol > li:hover) {
   background: var(--bg-tertiary, #f8fafc);
 }
-
 .markdown-body :deep(> ul > li::marker) { color: #8b5cf6; }
 .markdown-body :deep(> ol > li::marker) { color: #8b5cf6; font-weight: 700; }
-
 .markdown-body :deep(strong) {
   color: var(--text-primary, #0f172a); font-weight: 700;
   background: linear-gradient(transparent 60%, rgba(139,92,246,0.15) 60%);
   padding: 0 2px;
 }
-
 .markdown-body :deep(em) { color: #6366f1; font-style: normal; font-weight: 500; }
 
-/* 表格美化 */
+/* 表格 */
 .markdown-body :deep(table) {
   width: 100%; border-collapse: separate; border-spacing: 0;
-  margin: 16px 0 20px; border-radius: 12px; overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin: 14px 0 18px; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   border: 1px solid var(--border-color, #e2e8f0);
 }
-
 .markdown-body :deep(thead th) {
   background: linear-gradient(135deg, #8b5cf6, #6366f1);
-  color: #fff; font-weight: 600; font-size: 14px;
-  padding: 12px 16px; text-align: left;
-  border: none;
+  color: #fff; font-weight: 600; font-size: 13px;
+  padding: 10px 14px; text-align: left; border: none;
 }
-
 .markdown-body :deep(tbody td) {
-  padding: 11px 16px; font-size: 14px; border-bottom: 1px solid var(--border-light, #f1f5f9);
+  padding: 10px 14px; font-size: 13px;
+  border-bottom: 1px solid var(--border-light, #f1f5f9);
   border-right: 1px solid var(--border-light, #f1f5f9);
   color: var(--text-primary, #334155);
 }
-
 .markdown-body :deep(tbody tr:last-child td) { border-bottom: none; }
 .markdown-body :deep(tbody tr:hover) { background: rgba(139,92,246,0.04); }
 
 /* 引用块 */
 .markdown-body :deep(blockquote) {
-  margin: 16px 0; padding: 16px 20px;
+  margin: 14px 0; padding: 14px 18px;
   border-left: 4px solid #8b5cf6; border-radius: 0 12px 12px 0;
   background: linear-gradient(90deg, rgba(139,92,246,0.06), transparent);
-  color: var(--text-secondary, #475569);
 }
-
 .markdown-body :deep(blockquote p) { margin: 0; }
 
 /* 分隔线 */
 .markdown-body :deep(hr) {
-  border: none; height: 2px; margin: 28px 0;
+  border: none; height: 2px; margin: 24px 0;
   background: linear-gradient(90deg, transparent, #c4b5fd, transparent);
 }
 
@@ -487,13 +587,24 @@ function resetForm() {
 .markdown-body :deep(code) {
   background: rgba(139,92,246,0.1); color: #7c3aed;
   padding: 2px 8px; border-radius: 6px; font-size: 13px;
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
 }
 
-/* 光标 */
+/* 生成指示器 */
+.generating-indicator {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 24px;
+  background: var(--bg-secondary, #fff); border-radius: 12px;
+  border: 1px dashed #c4b5fd;
+}
+.generating-text {
+  font-size: 14px; color: #8b5cf6; font-weight: 500;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+@keyframes fadeInOut { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
 .cursor-blink {
   animation: blink 1s step-end infinite;
-  color: #8b5cf6; font-weight: 300; font-size: 18px;
+  color: #8b5cf6; font-weight: 300; font-size: 20px;
 }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
