@@ -13,7 +13,7 @@ export default defineConfig({
         // SSE 流式响应不缓冲
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq, req) => {
-            if (req.url === '/api/chat/stream') {
+            if (req.url === '/api/chat/stream' || req.url === '/api/plans/generate') {
               proxyReq.setHeader('Connection', 'keep-alive')
             }
           })

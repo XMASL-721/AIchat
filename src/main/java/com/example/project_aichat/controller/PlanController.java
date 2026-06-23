@@ -5,11 +5,11 @@ import com.example.project_aichat.dto.response.PageResponse;
 import com.example.project_aichat.entity.AiPlan;
 import com.example.project_aichat.service.PlanService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -19,17 +19,45 @@ public class PlanController {
 
     private final PlanService planService;
 
-    @PostMapping(value = "/generate", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> generatePlan(
+    private static final long SSE_TIMEOUT = 300_000L;
+
+    @PostMapping("/generate")
+    public SseEmitter generatePlan(
             @RequestBody Map<String, Object> request,
             Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         String planType = (String) request.get("planType");
         Map<String, Object> inputData = (Map<String, Object>) request.get("inputData");
 
-        return planService.generatePlan(userId, planType, inputData)
-                .map(token -> "data: " + token + "\n\n")
-                .concatWithValues("data: [DONE]\n\n");
+        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
+
+        planService.generatePlan(userId, planType, inputData)
+                .subscribe(
+                        token -> send(emitter, token),
+                        error -> {
+                            send(emitter, "[ERROR]" + error.getMessage());
+                            emitter.complete();
+                        },
+                        () -> {
+                            send(emitter, "[DONE]");
+                            emitter.complete();
+                        }
+                );
+
+        emitter.onTimeout(() -> {
+            send(emitter, "[ERROR]生成超时，请重试");
+            emitter.complete();
+        });
+
+        return emitter;
+    }
+
+    private void send(SseEmitter emitter, String data) {
+        try {
+            emitter.send(SseEmitter.event().data(data));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
+        }
     }
 
     @GetMapping
