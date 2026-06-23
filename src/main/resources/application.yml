@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Project_AIchat
+
+  # MySQL 数据源
+  datasource:
+    url: jdbc:mysql://localhost:3306/aichat?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 文件上传限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # AI 模型配置（DeepSeek，兼容 OpenAI 格式）
+  ai:
+    openai:
+      base-url: https://api.deepseek.com
+      api-key: sk-161939ce117c4bec805f4ee8228a5edb
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 0.7
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.example.project_aichat.entity
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT 配置
+jwt:
+  secret: YWktY2hhdC1zZWNyZXQta2V5LWZvci1wcm9qZWN0LWFpLWNoYXQtYXBwbGljYXRpb24tMjAyNA==
+  expiration-ms: 604800000  # 7 天
+
+# SSE 超时配置（5 分钟）
+spring.mvc.async.request-timeout: 300000
+
+# 日志
+logging:
+  level:
+    com.example.project_aichat: DEBUG
+    org.springframework.ai: DEBUG

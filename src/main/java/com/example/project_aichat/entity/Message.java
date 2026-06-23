@@ -1,0 +1,22 @@
+package com.example.project_aichat.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+@TableName("message")
+public class Message {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+
+    private Long conversationId;
+
+    private String role;  // "user" or "assistant"
+
+    private String content;
+
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createdAt;
+}
